@@ -87,14 +87,6 @@ export default function BeforeAfterSlider({
             />
           </div>
 
-          {/* Placeholder text when no images */}
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400 pointer-events-none">
-            <div className="text-center">
-              <p className="text-lg font-medium">Demo Image Area</p>
-              <p className="text-sm">Add demo-before.jpg and demo-after.png to /public</p>
-            </div>
-          </div>
-
           {/* Slider Line */}
           <div
             className="absolute top-0 bottom-0 w-0.5 bg-white shadow-lg"
