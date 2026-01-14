@@ -23,18 +23,19 @@ import Footer from '../components/landing/Footer';
 
         <h2 class="text-xl font-semibold mt-8 mb-4">Data Collection</h2>
         <p class="text-gray-600 mb-6">
-          We collect <strong>nothing</strong>. No analytics, no cookies, no tracking. The AI model runs locally in your browser using WebGPU or WebAssembly.
+          We don't collect your images or personal data. The AI model runs locally in your browser using WebGPU or WebAssembly. We use Vercel Speed Insights to collect anonymous performance metrics (page load times, web vitals) to improve the site experience.
         </p>
 
         <h2 class="text-xl font-semibold mt-8 mb-4">How It Works</h2>
         <p class="text-gray-600 mb-6">
-          When you upload an image, it stays on your device. The RMBG-1.4 model is downloaded once and cached in your browser's IndexedDB. All processing happens client-side.
+          When you upload an image, it stays on your device. The RMBG-1.4 model is downloaded once and cached in your browser's IndexedDB. All image processing happens client-side.
         </p>
 
         <h2 class="text-xl font-semibold mt-8 mb-4">Third-Party Services</h2>
-        <p class="text-gray-600 mb-6">
-          The only external request is to download the AI model from Hugging Face on first use. After that, everything works offline.
-        </p>
+        <ul class="text-gray-600 mb-6 list-disc list-inside space-y-2">
+          <li><strong>Hugging Face</strong> - AI model download on first use</li>
+          <li><strong>Vercel Speed Insights</strong> - Anonymous performance metrics</li>
+        </ul>
 
         <h2 class="text-xl font-semibold mt-8 mb-4">Open Source</h2>
         <p class="text-gray-600 mb-6">
