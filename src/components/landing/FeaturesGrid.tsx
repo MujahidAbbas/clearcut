@@ -1,30 +1,31 @@
+import { Icon } from '@iconify/react';
 import Container from '../ui/Container';
 import FeatureCard from './FeatureCard';
 
 const features = [
   {
-    icon: '🔒',
+    icon: <Icon icon="lucide:lock" className="w-7 h-7 text-indigo-600" />,
     iconBg: '#E8E8FF',
     title: '100% On-Device Privacy',
     description:
       'Unlike other tools, Clearcut never uploads your photos to a server. The AI models run directly in your browser, keeping your data completely offline and secure.',
   },
   {
-    icon: '⚡',
+    icon: <Icon icon="lucide:zap" className="w-7 h-7 text-amber-500" />,
     iconBg: '#FFEFD8',
     title: 'Instant Processing',
     description:
       'No waiting in queues or processing delays. Get your isolated subjects in milliseconds with high-performance WASM inference.',
   },
   {
-    icon: '✨',
+    icon: <Icon icon="lucide:sparkles" className="w-7 h-7 text-indigo-600" />,
     iconBg: '#E8E8FF',
     title: 'Studio-Grade Extraction',
     description:
       'Handles fine details like hair and transparent objects with precision. Pro-level results without the pro price tag.',
   },
   {
-    icon: '📥',
+    icon: <Icon icon="lucide:download" className="w-7 h-7 text-emerald-600" />,
     iconBg: '#D4F4E8',
     title: 'Unlimited High-Res Exports',
     description:

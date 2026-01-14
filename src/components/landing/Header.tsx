@@ -1,3 +1,4 @@
+import { Icon } from '@iconify/react';
 import Container from '../ui/Container';
 import Button from '../ui/Button';
 
@@ -8,7 +9,7 @@ export default function Header() {
         <nav className="flex items-center justify-between h-16">
           {/* Logo */}
           <a href="/" className="flex items-center gap-2 text-xl font-bold">
-            <span className="text-2xl">🎨</span>
+            <Icon icon="lucide:scissors" className="w-6 h-6 text-primary" />
             <span>Clearcut</span>
           </a>
 
@@ -26,7 +27,7 @@ export default function Header() {
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
             >
-              <span>☕</span>
+              <Icon icon="lucide:coffee" className="w-4 h-4" />
               Buy me a coffee
             </a>
           </div>

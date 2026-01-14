@@ -1,3 +1,4 @@
+import { Icon } from '@iconify/react';
 import Container from '../ui/Container';
 
 export default function Footer() {
@@ -8,7 +9,7 @@ export default function Footer() {
           {/* Brand */}
           <div>
             <a href="/" className="flex items-center gap-2 text-xl font-bold mb-4">
-              <span className="text-2xl">🎨</span>
+              <Icon icon="lucide:scissors" className="w-6 h-6 text-primary" />
               <span>Clearcut</span>
             </a>
             <p className="text-gray-text max-w-sm">
