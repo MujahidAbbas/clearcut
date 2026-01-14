@@ -21,13 +21,13 @@ export default function Header() {
               Features
             </a>
             <a
-              href="https://ko-fi.com/clearcut"
+              href="https://ko-fi.com/mujahiddev"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center gap-1 text-gray-600 hover:text-gray-900 transition-colors"
             >
-              <span>❤️</span>
-              Donate
+              <span>☕</span>
+              Buy me a coffee
             </a>
           </div>
 
