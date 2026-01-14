@@ -1,0 +1,26 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/landing/Header';
+import Hero from '../components/landing/Hero';
+import BeforeAfterSlider from '../components/landing/BeforeAfterSlider';
+import FeaturesGrid from '../components/landing/FeaturesGrid';
+import Footer from '../components/landing/Footer';
+---
+
+<Layout title="Professional Background Removal">
+  <Header client:load />
+
+  <main>
+    <Hero client:load />
+
+    <BeforeAfterSlider
+      client:visible
+      beforeImage="/demo-before.jpg"
+      afterImage="/demo-after.png"
+    />
+
+    <FeaturesGrid client:visible />
+  </main>
+
+  <Footer />
+</Layout>

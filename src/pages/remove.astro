@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/landing/Header';
+import Footer from '../components/landing/Footer';
+import BackgroundRemover from '../components/remove/BackgroundRemover';
+---
+
+<Layout title="Remove Background">
+  <Header client:load />
+
+  <main class="pt-20">
+    <!-- client:only="react" is required because Transformers.js needs browser APIs -->
+    <BackgroundRemover client:only="react" />
+  </main>
+
+  <Footer />
+</Layout>

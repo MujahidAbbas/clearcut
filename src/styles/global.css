@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+/* Custom theme colors */
+@theme {
+  --color-primary: #4563FF;
+  --color-primary-hover: #3451E6;
+  --color-primary-light: #E8E8FF;
+  --color-gray-text: #666666;
+  --color-gray-light: #F5F5F5;
+  --color-gray-border: #CCCCCC;
+  --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+/* Custom utility classes */
+@layer components {
+  .btn-primary {
+    @apply bg-primary text-white px-8 py-4 rounded-lg font-medium
+           transition-all duration-200 hover:bg-primary-hover hover:scale-[1.02];
+  }
+
+  .btn-secondary {
+    @apply bg-white text-primary border-2 border-primary px-8 py-4 rounded-lg
+           font-medium transition-all duration-200 hover:bg-primary-light;
+  }
+
+  .container-main {
+    @apply max-w-7xl mx-auto px-6 lg:px-12;
+  }
+}
+
+/* Transparency checkerboard pattern */
+.checkerboard {
+  background-image:
+    linear-gradient(45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(-45deg, #f0f0f0 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #f0f0f0 75%),
+    linear-gradient(-45deg, transparent 75%, #f0f0f0 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+}
