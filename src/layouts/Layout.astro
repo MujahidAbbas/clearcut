@@ -1,4 +1,6 @@
 ---
+import SpeedInsights from '@vercel/speed-insights/astro';
+
 interface Props {
   title: string;
   description?: string;
@@ -26,6 +28,7 @@ const { title, description = 'AI-powered background removal. 100% private, runs 
   </head>
   <body class="min-h-screen bg-white text-gray-900 font-sans antialiased">
     <slot />
+    <SpeedInsights />
   </body>
 </html>
 
