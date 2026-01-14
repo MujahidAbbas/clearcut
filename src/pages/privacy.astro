@@ -1,0 +1,53 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/landing/Header';
+import Footer from '../components/landing/Footer';
+---
+
+<Layout title="Privacy Policy">
+  <Header client:load />
+
+  <main class="pt-24 pb-16 px-6">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-3xl font-bold mb-8">Privacy Policy</h1>
+
+      <div class="prose prose-gray">
+        <p class="text-gray-600 mb-6">
+          <strong>Last updated:</strong> January 2026
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">The Short Version</h2>
+        <p class="text-gray-600 mb-6">
+          Clearcut processes images entirely in your browser. We don't collect, store, or transmit your images or any personal data. Your files never leave your device.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Data Collection</h2>
+        <p class="text-gray-600 mb-6">
+          We collect <strong>nothing</strong>. No analytics, no cookies, no tracking. The AI model runs locally in your browser using WebGPU or WebAssembly.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">How It Works</h2>
+        <p class="text-gray-600 mb-6">
+          When you upload an image, it stays on your device. The RMBG-1.4 model is downloaded once and cached in your browser's IndexedDB. All processing happens client-side.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Third-Party Services</h2>
+        <p class="text-gray-600 mb-6">
+          The only external request is to download the AI model from Hugging Face on first use. After that, everything works offline.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Open Source</h2>
+        <p class="text-gray-600 mb-6">
+          Clearcut is open source. You can verify these claims by reviewing the code on <a href="https://github.com/MujahidAbbas/clearcut" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Contact</h2>
+        <p class="text-gray-600">
+          Questions? Open an issue on <a href="https://github.com/MujahidAbbas/clearcut/issues" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>

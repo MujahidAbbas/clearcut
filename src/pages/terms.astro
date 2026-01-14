@@ -1,0 +1,58 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/landing/Header';
+import Footer from '../components/landing/Footer';
+---
+
+<Layout title="Terms of Service">
+  <Header client:load />
+
+  <main class="pt-24 pb-16 px-6">
+    <div class="max-w-2xl mx-auto">
+      <h1 class="text-3xl font-bold mb-8">Terms of Service</h1>
+
+      <div class="prose prose-gray">
+        <p class="text-gray-600 mb-6">
+          <strong>Last updated:</strong> January 2026
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Open Source Software</h2>
+        <p class="text-gray-600 mb-6">
+          Clearcut is open source software licensed under the MIT License. You're free to use, modify, and distribute it according to the license terms.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Use at Your Own Risk</h2>
+        <p class="text-gray-600 mb-6">
+          This software is provided "as is" without warranty of any kind. We're not liable for any damages or losses resulting from your use of Clearcut.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Your Content</h2>
+        <p class="text-gray-600 mb-6">
+          You retain all rights to your images. Since processing happens entirely in your browser, we never have access to your content.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">AI Model</h2>
+        <p class="text-gray-600 mb-6">
+          Clearcut uses the RMBG-1.4 model by BRIA AI. The model is subject to its own license terms. For commercial use of the model, please refer to <a href="https://huggingface.co/briaai/RMBG-1.4" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">BRIA AI's licensing</a>.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Acceptable Use</h2>
+        <p class="text-gray-600 mb-6">
+          Don't use Clearcut for anything illegal or harmful. Respect copyright and intellectual property rights when processing images.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Changes</h2>
+        <p class="text-gray-600 mb-6">
+          We may update these terms occasionally. Check the "Last updated" date for the latest version.
+        </p>
+
+        <h2 class="text-xl font-semibold mt-8 mb-4">Source Code</h2>
+        <p class="text-gray-600">
+          View the full source on <a href="https://github.com/MujahidAbbas/clearcut" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">GitHub</a>.
+        </p>
+      </div>
+    </div>
+  </main>
+
+  <Footer />
+</Layout>
