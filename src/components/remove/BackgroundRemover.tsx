@@ -37,7 +37,7 @@ export default function BackgroundRemover() {
     if (!modelLoaded) {
       initializeSegmenter((progress) => {
         if (progress.progress !== undefined) {
-          setModelProgress(progress.progress * 100);
+          setModelProgress(progress.progress);
         }
       }).then(() => {
         setModelLoaded(true);
