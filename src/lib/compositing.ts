@@ -67,7 +67,7 @@ function drawBackground(
 /**
  * Draw checkerboard pattern for transparency indication
  */
-function drawCheckerboard(
+export function drawCheckerboard(
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
@@ -87,7 +87,7 @@ function drawCheckerboard(
 /**
  * Draw the original image masked by the segmentation mask
  */
-function drawMaskedForeground(
+export function drawMaskedForeground(
   ctx: CanvasRenderingContext2D,
   originalImage: HTMLImageElement,
   maskCanvas: HTMLCanvasElement

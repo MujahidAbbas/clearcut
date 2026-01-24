@@ -1,6 +1,7 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import Button from '../ui/Button';
 import ComparisonSlider from './ComparisonSlider';
+import ExportModal from './ExportModal';
 import { downloadCanvas, createExportCanvas } from '../../lib/compositing';
 import { useAppStore } from '../../stores/appStore';
 
@@ -21,16 +22,63 @@ export default function ResultsView({
   onReset,
   onEdit,
 }: ResultsViewProps) {
-  const { sliderPosition, setSliderPosition, backgroundType, backgroundColor, backgroundImage } = useAppStore();
+  const { sliderPosition, setSliderPosition, backgroundType, backgroundColor, backgroundImage, originalFileName } = useAppStore();
+
+  const [exportState, setExportState] = useState<{
+    isOpen: boolean;
+    state: 'loading' | 'success' | 'error';
+    errorMessage?: string;
+  }>({ isOpen: false, state: 'loading' });
 
   const handleDownload = useCallback(async () => {
-    const exportCanvas = createExportCanvas(originalImage, maskCanvas, {
-      type: backgroundType,
-      color: backgroundColor,
-      image: backgroundImage ?? undefined,
-    });
-    await downloadCanvas(exportCanvas);
-  }, [originalImage, maskCanvas, backgroundType, backgroundColor, backgroundImage]);
+    // Open modal in loading state
+    setExportState({ isOpen: true, state: 'loading' });
+
+    const startTime = Date.now();
+
+    try {
+      // Create export canvas
+      const exportCanvas = createExportCanvas(originalImage, maskCanvas, {
+        type: backgroundType,
+        color: backgroundColor,
+        image: backgroundImage ?? undefined,
+      });
+
+      // Generate filename: {original}-nobg.png or fallback
+      const baseName = originalFileName
+        ? originalFileName.replace(/\.[^/.]+$/, '') // Remove extension
+        : 'image';
+      const filename = `${baseName}-nobg.png`;
+
+      // Ensure minimum 2 second loading time for perceived quality
+      const elapsed = Date.now() - startTime;
+      const minDelay = 2000;
+      if (elapsed < minDelay) {
+        await new Promise(resolve => setTimeout(resolve, minDelay - elapsed));
+      }
+
+      // Download the image
+      await downloadCanvas(exportCanvas, filename);
+
+      // Transition to success state
+      setExportState({ isOpen: true, state: 'success' });
+    } catch (error) {
+      // Show error state
+      setExportState({
+        isOpen: true,
+        state: 'error',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error occurred',
+      });
+    }
+  }, [originalImage, maskCanvas, backgroundType, backgroundColor, backgroundImage, originalFileName]);
+
+  const handleCloseModal = useCallback(() => {
+    setExportState({ isOpen: false, state: 'loading' });
+  }, []);
+
+  const handleRetry = useCallback(() => {
+    handleDownload();
+  }, [handleDownload]);
 
   return (
     <div className="w-full max-w-3xl mx-auto">
@@ -87,6 +135,15 @@ export default function ResultsView({
           onSliderChange={setSliderPosition}
         />
       </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={exportState.isOpen}
+        state={exportState.state}
+        errorMessage={exportState.errorMessage}
+        onClose={handleCloseModal}
+        onRetry={handleRetry}
+      />
     </div>
   );
 }
