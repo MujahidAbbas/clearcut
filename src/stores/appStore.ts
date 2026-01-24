@@ -1,6 +1,21 @@
 import { create } from 'zustand';
 
 // Types
+export interface EditState {
+  rotation: number;        // degrees: 0, 90, 180, 270
+  flipHorizontal: boolean;
+  flipVertical: boolean;
+  zoom: number;            // 0.5 to 3.0, default 1.0
+  pan: { x: number; y: number };
+  filters: {
+    brightness: number;    // 0-200%, default 100
+    contrast: number;      // 0-200%, default 100
+    saturation: number;    // 0-200%, default 100
+    blur: number;          // 0-20px, default 0
+  };
+  aspectRatio: 'original' | 'free' | '1:1' | '4:3' | '16:9' | '9:16';
+}
+
 interface AppState {
   // Image State
   originalImage: HTMLImageElement | null;
@@ -26,6 +41,11 @@ interface AppState {
   history: string[];
   historyIndex: number;
 
+  // Edit State
+  editState: EditState;
+  isEditModalOpen: boolean;
+  hasUnsavedEdits: boolean;
+
   // Actions
   setOriginalImage: (img: HTMLImageElement | null) => void;
   setMaskCanvas: (canvas: HTMLCanvasElement | null) => void;
@@ -43,7 +63,28 @@ interface AppState {
   undo: () => string | null;
   redo: () => string | null;
   reset: () => void;
+  setEditState: (partial: Partial<EditState>) => void;
+  resetEditState: () => void;
+  openEditModal: () => void;
+  closeEditModal: () => void;
+  setHasUnsavedEdits: (value: boolean) => void;
+  applyEdits: () => void;
 }
+
+const editInitialState: EditState = {
+  rotation: 0,
+  flipHorizontal: false,
+  flipVertical: false,
+  zoom: 1.0,
+  pan: { x: 0, y: 0 },
+  filters: {
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    blur: 0,
+  },
+  aspectRatio: 'original',
+};
 
 const initialState = {
   originalImage: null,
@@ -60,6 +101,9 @@ const initialState = {
   sliderPosition: 50,
   history: [] as string[],
   historyIndex: -1,
+  editState: editInitialState,
+  isEditModalOpen: false,
+  hasUnsavedEdits: false,
 };
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -106,4 +150,25 @@ export const useAppStore = create<AppState>((set, get) => ({
   },
 
   reset: () => set(initialState),
+
+  setEditState: (partial) => set((state) => ({
+    editState: { ...state.editState, ...partial },
+    hasUnsavedEdits: true,
+  })),
+
+  resetEditState: () => set({
+    editState: editInitialState,
+    hasUnsavedEdits: false,
+  }),
+
+  openEditModal: () => set({ isEditModalOpen: true }),
+
+  closeEditModal: () => set({ isEditModalOpen: false }),
+
+  setHasUnsavedEdits: (value) => set({ hasUnsavedEdits: value }),
+
+  applyEdits: () => set({
+    hasUnsavedEdits: false,
+    isEditModalOpen: false,
+  }),
 }));
