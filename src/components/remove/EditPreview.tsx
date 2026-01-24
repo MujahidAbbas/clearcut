@@ -4,6 +4,115 @@ import { applyTransforms } from '@/lib/imageTransforms';
 import { applyFilter, resetFilter } from '@/lib/imageFilters';
 import { drawMaskedForeground, drawCheckerboard } from '@/lib/compositing';
 
+// Aspect ratio values for crop calculation
+const ASPECT_RATIO_VALUES: Record<string, number | null> = {
+  'original': null,
+  'free': null,
+  '1:1': 1,
+  '4:3': 4 / 3,
+  '16:9': 16 / 9,
+  '9:16': 9 / 16,
+};
+
+// Calculate crop rectangle for a given aspect ratio
+function calculateCropOverlay(
+  canvasWidth: number,
+  canvasHeight: number,
+  aspectRatio: string
+): { x: number; y: number; width: number; height: number } | null {
+  const targetRatio = ASPECT_RATIO_VALUES[aspectRatio];
+  if (targetRatio === null) return null;
+
+  const currentRatio = canvasWidth / canvasHeight;
+
+  let cropWidth: number;
+  let cropHeight: number;
+
+  if (currentRatio > targetRatio) {
+    // Canvas is wider than target, constrain by height
+    cropHeight = canvasHeight;
+    cropWidth = canvasHeight * targetRatio;
+  } else {
+    // Canvas is taller than target, constrain by width
+    cropWidth = canvasWidth;
+    cropHeight = canvasWidth / targetRatio;
+  }
+
+  return {
+    x: (canvasWidth - cropWidth) / 2,
+    y: (canvasHeight - cropHeight) / 2,
+    width: cropWidth,
+    height: cropHeight,
+  };
+}
+
+// Draw crop overlay with dimmed areas, dashed border, handles, and grid
+function drawCropOverlay(
+  ctx: CanvasRenderingContext2D,
+  canvasWidth: number,
+  canvasHeight: number,
+  crop: { x: number; y: number; width: number; height: number }
+) {
+  // 1. Draw semi-transparent overlay outside crop area
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+
+  // Top
+  ctx.fillRect(0, 0, canvasWidth, crop.y);
+  // Bottom
+  ctx.fillRect(0, crop.y + crop.height, canvasWidth, canvasHeight - crop.y - crop.height);
+  // Left
+  ctx.fillRect(0, crop.y, crop.x, crop.height);
+  // Right
+  ctx.fillRect(crop.x + crop.width, crop.y, canvasWidth - crop.x - crop.width, crop.height);
+
+  // 2. Draw dashed border
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(crop.x, crop.y, crop.width, crop.height);
+  ctx.setLineDash([]);
+
+  // 3. Draw rule of thirds grid lines
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.lineWidth = 1;
+
+  // Vertical lines
+  const thirdWidth = crop.width / 3;
+  ctx.beginPath();
+  ctx.moveTo(crop.x + thirdWidth, crop.y);
+  ctx.lineTo(crop.x + thirdWidth, crop.y + crop.height);
+  ctx.moveTo(crop.x + thirdWidth * 2, crop.y);
+  ctx.lineTo(crop.x + thirdWidth * 2, crop.y + crop.height);
+  ctx.stroke();
+
+  // Horizontal lines
+  const thirdHeight = crop.height / 3;
+  ctx.beginPath();
+  ctx.moveTo(crop.x, crop.y + thirdHeight);
+  ctx.lineTo(crop.x + crop.width, crop.y + thirdHeight);
+  ctx.moveTo(crop.x, crop.y + thirdHeight * 2);
+  ctx.lineTo(crop.x + crop.width, crop.y + thirdHeight * 2);
+  ctx.stroke();
+
+  // 4. Draw corner handles
+  const handleSize = 8;
+  ctx.fillStyle = 'white';
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
+  ctx.lineWidth = 1;
+
+  const corners = [
+    { x: crop.x, y: crop.y }, // top-left
+    { x: crop.x + crop.width - handleSize, y: crop.y }, // top-right
+    { x: crop.x, y: crop.y + crop.height - handleSize }, // bottom-left
+    { x: crop.x + crop.width - handleSize, y: crop.y + crop.height - handleSize }, // bottom-right
+  ];
+
+  corners.forEach(corner => {
+    ctx.fillRect(corner.x, corner.y, handleSize, handleSize);
+    ctx.strokeRect(corner.x, corner.y, handleSize, handleSize);
+  });
+}
+
 interface EditPreviewProps {
   originalImage: HTMLImageElement;
   maskCanvas: HTMLCanvasElement;
@@ -105,6 +214,12 @@ export default function EditPreview({
 
     // 10. Restore state
     ctx.restore();
+
+    // 11. Draw crop overlay if aspect ratio is selected (drawn after restore, not affected by transforms)
+    const cropRect = calculateCropOverlay(canvas.width, canvas.height, editState.aspectRatio);
+    if (cropRect) {
+      drawCropOverlay(ctx, canvas.width, canvas.height, cropRect);
+    }
   };
 
   // Re-render when state changes
