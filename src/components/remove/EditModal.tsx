@@ -1,7 +1,10 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAppStore } from '@/stores/appStore';
 import Button from '@/components/ui/Button';
 import EditPreview from './EditPreview';
+import BackgroundSelector from './BackgroundSelector';
+import FilterControls from './FilterControls';
+import TransformControls from './TransformControls';
 
 interface EditModalProps {
   originalImage: HTMLImageElement;
@@ -18,6 +21,12 @@ export default function EditModal({
 }: EditModalProps) {
   const modalRef = useRef<HTMLDivElement>(null);
   const isEditModalOpen = useAppStore((state) => state.isEditModalOpen);
+  const hasUnsavedEdits = useAppStore((state) => state.hasUnsavedEdits);
+  const setHasUnsavedEdits = useAppStore((state) => state.setHasUnsavedEdits);
+  const resetEditState = useAppStore((state) => state.resetEditState);
+
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showBefore, setShowBefore] = useState(false);
 
   // Focus trap
   useEffect(() => {
@@ -52,20 +61,51 @@ export default function EditModal({
     return () => document.removeEventListener('keydown', handleTab);
   }, [isEditModalOpen]);
 
-  // ESC key handling (placeholder for now - unsaved changes check comes in Plan 05)
+  // Handlers
+  const handleExit = () => {
+    if (hasUnsavedEdits) {
+      setShowConfirmDialog(true);
+    } else {
+      handleClose();
+    }
+  };
+
+  const handleConfirmDiscard = () => {
+    setShowConfirmDialog(false);
+    resetEditState();
+    setHasUnsavedEdits(false);
+    onClose();
+  };
+
+  const handleApply = () => {
+    setHasUnsavedEdits(false);
+    onApply();
+  };
+
+  const handleClose = () => {
+    resetEditState();
+    onClose();
+  };
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      handleExit();
+    }
+  };
+
+  // ESC key handling
   useEffect(() => {
     if (!isEditModalOpen) return;
 
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        // TODO: Plan 05 - check for unsaved changes before closing
-        // For now, do nothing
+        handleExit();
       }
     };
 
     document.addEventListener('keydown', handleEscape);
     return () => document.removeEventListener('keydown', handleEscape);
-  }, [isEditModalOpen]);
+  }, [isEditModalOpen, hasUnsavedEdits]);
 
   if (!isEditModalOpen) return null;
 
@@ -75,6 +115,7 @@ export default function EditModal({
       role="dialog"
       aria-modal="true"
       aria-labelledby="edit-modal-title"
+      onClick={handleBackdropClick}
     >
       <div
         ref={modalRef}
@@ -88,75 +129,102 @@ export default function EditModal({
               Edit Image
             </h2>
             <button
-              className="px-4 py-2 bg-gray-700 hover:bg-gray-600 text-white text-sm rounded-lg transition-colors duration-200"
-              disabled
+              onClick={() => setShowBefore(!showBefore)}
+              className={`px-3 py-1 text-sm rounded-lg transition-colors
+                ${showBefore ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600'}`}
             >
-              Before/After
+              {showBefore ? 'Showing Before' : 'Show Before'}
             </button>
           </div>
 
           {/* Canvas Preview */}
           <div className="flex-1 overflow-hidden">
-            <EditPreview originalImage={originalImage} maskCanvas={maskCanvas} />
+            <EditPreview
+              originalImage={originalImage}
+              maskCanvas={maskCanvas}
+              showBefore={showBefore}
+            />
           </div>
         </div>
 
         {/* Right Sidebar */}
-        <div className="w-[360px] bg-gray-800 border-l border-gray-700 flex flex-col">
+        <div className="w-[360px] bg-white border-l border-gray-200 flex flex-col">
           {/* Scrollable Content */}
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Background Section */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">Background</h3>
-              <div className="bg-gray-700/50 rounded-lg p-4 text-gray-400 text-sm">
-                Placeholder for background controls
-              </div>
-            </div>
+          <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            <BackgroundSelector />
+            <FilterControls />
+            <TransformControls />
 
-            {/* BG Filters Section */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">BG Filters</h3>
-              <div className="bg-gray-700/50 rounded-lg p-4 text-gray-400 text-sm">
-                Placeholder for background filter controls
-              </div>
-            </div>
-
-            {/* Transform Section */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">Transform</h3>
-              <div className="bg-gray-700/50 rounded-lg p-4 text-gray-400 text-sm">
-                Placeholder for transform controls
-              </div>
-            </div>
-
-            {/* Aspect Ratio Section */}
-            <div>
-              <h3 className="text-sm font-semibold text-gray-300 mb-3">Aspect Ratio</h3>
-              <div className="bg-gray-700/50 rounded-lg p-4 text-gray-400 text-sm">
-                Placeholder for aspect ratio controls
-              </div>
+            {/* Refine Edges Section - Placeholder for Phase 3 */}
+            <div className="space-y-3">
+              <h3 className="text-sm font-semibold text-gray-700">Edges</h3>
+              <button
+                disabled
+                className="w-full py-2 px-4 rounded-lg border border-gray-200 text-sm text-gray-400
+                           bg-gray-50 cursor-not-allowed flex items-center justify-center gap-2"
+                title="Coming soon - Fine-tune background removal edges"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 3v18M3 12h18" strokeLinecap="round" />
+                </svg>
+                Refine Edges
+                <span className="text-xs bg-gray-200 px-1.5 py-0.5 rounded">Soon</span>
+              </button>
+              <p className="text-xs text-gray-400">
+                Fine-tune the edges of your cutout for cleaner results.
+              </p>
             </div>
           </div>
 
-          {/* Bottom Action Buttons */}
-          <div className="p-6 border-t border-gray-700 flex gap-3">
-            <Button
-              variant="ghost"
-              className="flex-1 text-gray-300 hover:text-white"
-              onClick={onClose}
-            >
-              Exit Editor
-            </Button>
+          {/* Action Buttons (fixed at bottom) */}
+          <div className="p-4 border-t border-gray-200 space-y-2">
             <Button
               variant="primary"
-              className="flex-1"
-              onClick={onApply}
+              className="w-full"
+              onClick={handleApply}
             >
               Apply & Done
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full"
+              onClick={handleExit}
+            >
+              Exit Editor
             </Button>
           </div>
         </div>
       </div>
+
+      {/* Confirm Dialog */}
+      {showConfirmDialog && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-xl p-6 max-w-sm mx-4 shadow-2xl">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Discard changes?
+            </h3>
+            <p className="text-gray-600 mb-6">
+              You have unsaved changes. Are you sure you want to exit?
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="ghost"
+                className="flex-1"
+                onClick={handleConfirmDiscard}
+              >
+                Discard
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1"
+                onClick={() => setShowConfirmDialog(false)}
+              >
+                Keep Editing
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

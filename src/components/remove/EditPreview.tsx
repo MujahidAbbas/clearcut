@@ -7,11 +7,13 @@ import { drawMaskedForeground, drawCheckerboard } from '@/lib/compositing';
 interface EditPreviewProps {
   originalImage: HTMLImageElement;
   maskCanvas: HTMLCanvasElement;
+  showBefore?: boolean;
 }
 
 export default function EditPreview({
   originalImage,
   maskCanvas,
+  showBefore = false,
 }: EditPreviewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -32,6 +34,27 @@ export default function EditPreview({
 
     // 1. Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // If showing before, just draw the original image
+    if (showBefore) {
+      ctx.save();
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+
+      // Center the original image
+      const scale = Math.min(
+        canvas.width / originalImage.width,
+        canvas.height / originalImage.height
+      );
+      const scaledWidth = originalImage.width * scale;
+      const scaledHeight = originalImage.height * scale;
+      const x = (canvas.width - scaledWidth) / 2;
+      const y = (canvas.height - scaledHeight) / 2;
+
+      ctx.drawImage(originalImage, x, y, scaledWidth, scaledHeight);
+      ctx.restore();
+      return;
+    }
 
     // 2. Draw checkerboard if transparent
     if (backgroundType === 'transparent') {
@@ -85,7 +108,7 @@ export default function EditPreview({
   // Re-render when state changes
   useEffect(() => {
     renderPreview();
-  }, [editState, backgroundType, backgroundColor, backgroundImage]);
+  }, [editState, backgroundType, backgroundColor, backgroundImage, showBefore]);
 
   // Initialize canvas size
   useEffect(() => {
