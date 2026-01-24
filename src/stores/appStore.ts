@@ -5,6 +5,7 @@ interface AppState {
   // Image State
   originalImage: HTMLImageElement | null;
   maskCanvas: HTMLCanvasElement | null;
+  originalFileName: string | null;
 
   // Background Settings
   backgroundColor: string;
@@ -28,6 +29,7 @@ interface AppState {
   // Actions
   setOriginalImage: (img: HTMLImageElement | null) => void;
   setMaskCanvas: (canvas: HTMLCanvasElement | null) => void;
+  setOriginalFileName: (name: string | null) => void;
   setBackgroundColor: (color: string) => void;
   setBackgroundType: (type: 'transparent' | 'color' | 'image') => void;
   setBackgroundImage: (img: HTMLImageElement | null) => void;
@@ -46,6 +48,7 @@ interface AppState {
 const initialState = {
   originalImage: null,
   maskCanvas: null,
+  originalFileName: null,
   backgroundColor: '#ffffff',
   backgroundType: 'transparent' as const,
   backgroundImage: null,
@@ -64,6 +67,7 @@ export const useAppStore = create<AppState>((set, get) => ({
 
   setOriginalImage: (img) => set({ originalImage: img }),
   setMaskCanvas: (canvas) => set({ maskCanvas: canvas }),
+  setOriginalFileName: (name) => set({ originalFileName: name }),
   setBackgroundColor: (color) => set({ backgroundColor: color }),
   setBackgroundType: (type) => set({ backgroundType: type }),
   setBackgroundImage: (img) => set({ backgroundImage: img }),
