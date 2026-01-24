@@ -3,6 +3,7 @@ import UploadZone from './UploadZone';
 import ProcessingState from './ProcessingState';
 import ResultsView from './ResultsView';
 import EditingView from './EditingView';
+import EditModal from './EditModal';
 import { initializeSegmenter, removeBackground } from '../../lib/segmentation';
 import { renderComposite } from '../../lib/compositing';
 import { saveMaskSnapshot } from '../../lib/brushTool';
@@ -28,6 +29,10 @@ export default function BackgroundRemover() {
     backgroundType,
     backgroundColor,
     backgroundImage,
+    isEditModalOpen,
+    openEditModal,
+    closeEditModal,
+    resetEditState,
     pushHistory,
     reset,
   } = useAppStore();
@@ -124,8 +129,29 @@ export default function BackgroundRemover() {
   }, [reset]);
 
   const handleEdit = useCallback(() => {
-    setViewState('editing');
-  }, []);
+    openEditModal();
+  }, [openEditModal]);
+
+  const handleEditClose = useCallback(() => {
+    closeEditModal();
+  }, [closeEditModal]);
+
+  const handleEditApply = useCallback(() => {
+    // Re-render preview with current state (includes edit transforms/filters)
+    if (originalImage && maskCanvas && previewCanvasRef.current) {
+      const ctx = previewCanvasRef.current.getContext('2d');
+      if (ctx) {
+        // Note: For now, the preview just uses background state
+        // Full edit state rendering would need to bake transforms into the canvas
+        renderComposite(ctx, originalImage, maskCanvas, {
+          type: backgroundType,
+          color: backgroundColor,
+          image: backgroundImage ?? undefined,
+        });
+      }
+    }
+    closeEditModal();
+  }, [originalImage, maskCanvas, backgroundType, backgroundColor, backgroundImage, closeEditModal]);
 
   const handleBackToResult = useCallback(() => {
     // Re-render preview canvas with current mask state
@@ -206,6 +232,16 @@ export default function BackgroundRemover() {
             onReset={handleReset}
           />
         )}
+
+      {/* Edit Modal */}
+      {isEditModalOpen && originalImage && maskCanvas && (
+        <EditModal
+          originalImage={originalImage}
+          maskCanvas={maskCanvas}
+          onClose={handleEditClose}
+          onApply={handleEditApply}
+        />
+      )}
     </div>
   );
 }
