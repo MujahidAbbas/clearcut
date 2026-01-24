@@ -10,7 +10,7 @@
 
 ## Overview
 
-Clearcut is a privacy-first background removal tool that runs entirely in your browser. No uploads, no servers, no subscriptions - just instant, studio-quality results powered by AI.
+Clearcut is a privacy-first background removal and image editing tool that runs entirely in your browser. No uploads, no servers, no subscriptions - just instant, studio-quality results powered by AI. Remove backgrounds, apply custom backgrounds, adjust filters, transform images, and crop to specific aspect ratios - all without your images ever leaving your device.
 
 ### Key Features
 
@@ -18,9 +18,27 @@ Clearcut is a privacy-first background removal tool that runs entirely in your b
 - **Unlimited & Free** - No usage limits, no watermarks, no accounts required.
 - **Instant Processing** - Powered by WebGPU/WASM for fast inference.
 - **Studio-Grade Quality** - Uses the RMBG-1.4 model for precise edge detection and hair handling.
+
+#### Background Removal & Editing
 - **Brush Editing** - Fine-tune results with erase/restore brush tools.
-- **Background Replacement** - Add solid colors or custom images as backgrounds.
-- **High-Res Export** - Download full-resolution PNG or JPG files.
+- **Undo/Redo** - Up to 20 history entries for brush edits.
+- **Before/After Comparison** - Interactive slider to compare original and edited images.
+
+#### Image Editing Modal
+- **Full-Screen Editor** - Immersive editing experience with real-time preview.
+- **Background Selection** - Choose from 12 preset colors, custom color picker, or upload your own background image.
+- **Background Filters** - Adjust brightness (0-200%), contrast (0-200%), saturation (0-200%), and blur (0-20px) on backgrounds.
+- **Transform Controls**:
+  - Zoom: 0.5x to 3.0x with interactive canvas zoom (zoom toward cursor position).
+  - Rotate: 90-degree increments left or right.
+  - Flip: Horizontal and vertical mirroring with active state indicators.
+- **Aspect Ratio Cropping** - Interactive crop tool with 6 aspect ratio options (Original, Free, 1:1, 4:3, 16:9, 9:16).
+- **Crop Overlay** - Visual crop handles with rule of thirds grid for composition.
+- **Real-Time Preview** - See all edits applied instantly on the canvas.
+
+#### Export
+- **Export Modal** - Loading states, success confirmation, and Ko-fi support prompt.
+- **High-Res Export** - Download full-resolution PNG or JPG files with original filename + "-nobg" suffix.
 
 ---
 
@@ -77,22 +95,38 @@ clearcut/
 │   └── favicon.svg
 ├── src/
 │   ├── components/
-│   │   ├── landing/        # Landing page components
-│   │   ├── remove/         # Background removal UI
-│   │   └── ui/             # Reusable UI components
+│   │   ├── landing/              # Landing page components
+│   │   ├── remove/               # Background removal & editing UI
+│   │   │   ├── BackgroundRemover.tsx    # Main orchestrator
+│   │   │   ├── UploadZone.tsx           # Image upload
+│   │   │   ├── ProcessingState.tsx      # Loading states
+│   │   │   ├── ResultsView.tsx          # Results display
+│   │   │   ├── EditingView.tsx          # Brush editing view
+│   │   │   ├── ComparisonSlider.tsx     # Before/after slider
+│   │   │   ├── BrushPanel.tsx           # Brush controls
+│   │   │   ├── BackgroundPanel.tsx      # Background controls
+│   │   │   ├── EditModal.tsx            # Full-screen editor
+│   │   │   ├── EditPreview.tsx          # Interactive canvas preview
+│   │   │   ├── ExportModal.tsx          # Export flow with Ko-fi
+│   │   │   ├── BackgroundSelector.tsx   # Preset/custom backgrounds
+│   │   │   ├── FilterControls.tsx       # BG filter sliders
+│   │   │   └── TransformControls.tsx    # Zoom/rotate/flip/crop
+│   │   └── ui/                   # Reusable UI components
 │   ├── lib/
-│   │   ├── segmentation.ts # AI model integration
-│   │   ├── compositing.ts  # Canvas rendering & export
-│   │   └── brushTool.ts    # Brush editing utilities
+│   │   ├── segmentation.ts       # AI model integration
+│   │   ├── compositing.ts        # Canvas rendering & export
+│   │   ├── brushTool.ts          # Brush editing utilities
+│   │   ├── imageFilters.ts       # CSS filter utilities
+│   │   └── imageTransforms.ts    # Canvas transform utilities
 │   ├── stores/
-│   │   └── appStore.ts     # Zustand state management
+│   │   └── appStore.ts           # Zustand state management
 │   ├── layouts/
-│   │   └── Layout.astro    # Base HTML layout
+│   │   └── Layout.astro          # Base HTML layout
 │   ├── pages/
-│   │   ├── index.astro     # Landing page
-│   │   └── remove.astro    # Background removal tool
+│   │   ├── index.astro           # Landing page
+│   │   └── remove.astro          # Background removal tool
 │   └── styles/
-│       └── global.css      # Tailwind & global styles
+│       └── global.css            # Tailwind & global styles
 ├── astro.config.mjs
 ├── tailwind.config.js
 └── package.json
@@ -105,8 +139,9 @@ clearcut/
 1. **Model Loading** - On first visit, the RMBG-1.4 model (~45MB) is downloaded and cached in your browser.
 2. **Image Processing** - When you upload an image, it's processed entirely client-side using WebGPU (if available) or WASM.
 3. **Mask Generation** - The AI generates a segmentation mask identifying foreground vs background.
-4. **Compositing** - The mask is applied to create a transparent background, with optional color/image replacement.
-5. **Export** - The final result is rendered to a canvas and exported as PNG/JPG.
+4. **Image Editing** - Open the full-screen editor to apply background replacements, filters (brightness, contrast, saturation, blur), transforms (zoom, rotate, flip), and crop to specific aspect ratios.
+5. **Compositing** - The mask is applied to create a transparent background, with optional color/image replacement and filters.
+6. **Export** - Click the download button to trigger the export modal. The final result is rendered to a canvas and exported as PNG/JPG with the original filename + "-nobg" suffix.
 
 **No data ever leaves your browser.**
 
