@@ -77,10 +77,10 @@ export default function EditPreview({
       pan: editState.pan
     }, canvas.width, canvas.height);
 
-    // 6. Apply filters
+    // 6. Apply filters to BACKGROUND ONLY
     applyFilter(ctx, editState.filters);
 
-    // 7. Draw background (if color or image)
+    // 7. Draw background (if color or image) - filters apply here
     if (backgroundType === 'color') {
       ctx.fillStyle = backgroundColor;
       ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -97,11 +97,13 @@ export default function EditPreview({
       ctx.drawImage(backgroundImage, x, y, scaledWidth, scaledHeight);
     }
 
-    // 8. Draw masked foreground
+    // 8. Reset filters BEFORE drawing foreground (filters only apply to background)
+    resetFilter(ctx);
+
+    // 9. Draw masked foreground (without filters)
     drawMaskedForeground(ctx, originalImage, maskCanvas);
 
-    // 9. Reset filter and restore state
-    resetFilter(ctx);
+    // 10. Restore state
     ctx.restore();
   };
 
