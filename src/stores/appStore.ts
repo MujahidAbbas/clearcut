@@ -22,6 +22,7 @@ export interface EditState {
   };
   aspectRatio: 'original' | 'free' | '1:1' | '4:3' | '16:9' | '9:16';
   cropBox: CropBox | null; // null when no crop is active (original/free without user interaction)
+  cropDisplayScale: number; // scale factor to convert cropBox display coords to actual image coords
 }
 
 interface AppState {
@@ -93,6 +94,7 @@ const editInitialState: EditState = {
   },
   aspectRatio: 'original',
   cropBox: null,
+  cropDisplayScale: 1,
 };
 
 const initialState = {

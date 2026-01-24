@@ -7,6 +7,7 @@ import EditModal from './EditModal';
 import { initializeSegmenter, removeBackground } from '../../lib/segmentation';
 import { renderComposite } from '../../lib/compositing';
 import { saveMaskSnapshot } from '../../lib/brushTool';
+import { applyCrop } from '../../lib/imageTransforms';
 import { useAppStore } from '../../stores/appStore';
 
 type ViewState = 'upload' | 'processing' | 'result' | 'editing';
@@ -33,6 +34,7 @@ export default function BackgroundRemover() {
     openEditModal,
     closeEditModal,
     resetEditState,
+    editState,
     pushHistory,
     reset,
   } = useAppStore();
@@ -136,13 +138,50 @@ export default function BackgroundRemover() {
     closeEditModal();
   }, [closeEditModal]);
 
-  const handleEditApply = useCallback(() => {
-    // Re-render preview with current state (includes edit transforms/filters)
-    if (originalImage && maskCanvas && previewCanvasRef.current) {
+  const handleEditApply = useCallback(async () => {
+    if (!originalImage || !maskCanvas || !previewCanvasRef.current) {
+      closeEditModal();
+      return;
+    }
+
+    // Check if there's a crop to apply
+    if (editState.cropBox && editState.aspectRatio !== 'original') {
+      try {
+        // Apply the crop to get new cropped image and mask
+        const { croppedImage, croppedMask } = await applyCrop(
+          originalImage,
+          maskCanvas,
+          editState.cropBox,
+          editState.cropDisplayScale
+        );
+
+        // Update the app state with cropped versions
+        setOriginalImage(croppedImage);
+        setMaskCanvas(croppedMask);
+
+        // Update preview canvas size
+        previewCanvasRef.current.width = croppedImage.naturalWidth;
+        previewCanvasRef.current.height = croppedImage.naturalHeight;
+
+        // Render the cropped composite
+        const ctx = previewCanvasRef.current.getContext('2d');
+        if (ctx) {
+          renderComposite(ctx, croppedImage, croppedMask, {
+            type: backgroundType,
+            color: backgroundColor,
+            image: backgroundImage ?? undefined,
+          });
+        }
+
+        // Save cropped mask to history
+        pushHistory(saveMaskSnapshot(croppedMask));
+      } catch (error) {
+        console.error('Failed to apply crop:', error);
+      }
+    } else {
+      // No crop, just re-render with background settings
       const ctx = previewCanvasRef.current.getContext('2d');
       if (ctx) {
-        // Note: For now, the preview just uses background state
-        // Full edit state rendering would need to bake transforms into the canvas
         renderComposite(ctx, originalImage, maskCanvas, {
           type: backgroundType,
           color: backgroundColor,
@@ -150,8 +189,11 @@ export default function BackgroundRemover() {
         });
       }
     }
+
+    // Reset edit state and close modal
+    resetEditState();
     closeEditModal();
-  }, [originalImage, maskCanvas, backgroundType, backgroundColor, backgroundImage, closeEditModal]);
+  }, [originalImage, maskCanvas, backgroundType, backgroundColor, backgroundImage, editState, setOriginalImage, setMaskCanvas, pushHistory, resetEditState, closeEditModal]);
 
   const handleBackToResult = useCallback(() => {
     // Re-render preview canvas with current mask state

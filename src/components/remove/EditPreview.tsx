@@ -311,6 +311,9 @@ export default function EditPreview({
       return;
     }
 
+    // Calculate display scale (canvas size / original image size)
+    const displayScale = canvas.width / originalImage.width;
+
     // Initialize crop box if not set or if aspect ratio changed to a fixed one
     if (!editState.cropBox || aspectRatioValue !== null) {
       const defaultCrop = calculateDefaultCrop(
@@ -318,9 +321,12 @@ export default function EditPreview({
         canvas.height,
         editState.aspectRatio
       );
-      setEditState({ cropBox: defaultCrop });
+      setEditState({ cropBox: defaultCrop, cropDisplayScale: displayScale });
+    } else {
+      // Update display scale even if cropBox exists
+      setEditState({ cropDisplayScale: displayScale });
     }
-  }, [editState.aspectRatio]);
+  }, [editState.aspectRatio, originalImage.width]);
 
   // Render preview
   const renderPreview = useCallback(() => {

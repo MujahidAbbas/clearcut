@@ -83,3 +83,69 @@ export function calculateCropRect(
     };
   }
 }
+
+export interface CropBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+/**
+ * Apply crop to create new cropped image and mask canvases.
+ * Returns new HTMLImageElement and HTMLCanvasElement for the cropped region.
+ */
+export async function applyCrop(
+  originalImage: HTMLImageElement,
+  maskCanvas: HTMLCanvasElement,
+  cropBox: CropBox,
+  displayScale: number
+): Promise<{ croppedImage: HTMLImageElement; croppedMask: HTMLCanvasElement }> {
+  // Convert display coordinates to actual image coordinates
+  const actualCrop = {
+    x: Math.round(cropBox.x / displayScale),
+    y: Math.round(cropBox.y / displayScale),
+    width: Math.round(cropBox.width / displayScale),
+    height: Math.round(cropBox.height / displayScale),
+  };
+
+  // Ensure crop is within bounds
+  const clampedCrop = {
+    x: Math.max(0, Math.min(actualCrop.x, originalImage.naturalWidth - 1)),
+    y: Math.max(0, Math.min(actualCrop.y, originalImage.naturalHeight - 1)),
+    width: Math.min(actualCrop.width, originalImage.naturalWidth - actualCrop.x),
+    height: Math.min(actualCrop.height, originalImage.naturalHeight - actualCrop.y),
+  };
+
+  // Create cropped image canvas
+  const imageCanvas = document.createElement('canvas');
+  imageCanvas.width = clampedCrop.width;
+  imageCanvas.height = clampedCrop.height;
+  const imageCtx = imageCanvas.getContext('2d')!;
+  imageCtx.drawImage(
+    originalImage,
+    clampedCrop.x, clampedCrop.y, clampedCrop.width, clampedCrop.height,
+    0, 0, clampedCrop.width, clampedCrop.height
+  );
+
+  // Create cropped mask canvas
+  const croppedMask = document.createElement('canvas');
+  croppedMask.width = clampedCrop.width;
+  croppedMask.height = clampedCrop.height;
+  const maskCtx = croppedMask.getContext('2d')!;
+  maskCtx.drawImage(
+    maskCanvas,
+    clampedCrop.x, clampedCrop.y, clampedCrop.width, clampedCrop.height,
+    0, 0, clampedCrop.width, clampedCrop.height
+  );
+
+  // Convert cropped image canvas to HTMLImageElement
+  const croppedImage = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = imageCanvas.toDataURL('image/png');
+  });
+
+  return { croppedImage, croppedMask };
+}
