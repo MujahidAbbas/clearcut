@@ -26,3 +26,4 @@ pnpm-debug.log*
 # AI and docs folders
 .claude/
 docs/
+.planning/
