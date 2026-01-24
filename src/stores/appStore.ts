@@ -1,6 +1,13 @@
 import { create } from 'zustand';
 
 // Types
+export interface CropBox {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface EditState {
   rotation: number;        // degrees: 0, 90, 180, 270
   flipHorizontal: boolean;
@@ -14,6 +21,7 @@ export interface EditState {
     blur: number;          // 0-20px, default 0
   };
   aspectRatio: 'original' | 'free' | '1:1' | '4:3' | '16:9' | '9:16';
+  cropBox: CropBox | null; // null when no crop is active (original/free without user interaction)
 }
 
 interface AppState {
@@ -84,6 +92,7 @@ const editInitialState: EditState = {
     blur: 0,
   },
   aspectRatio: 'original',
+  cropBox: null,
 };
 
 const initialState = {
