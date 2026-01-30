@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { useAppStore } from '@/stores/appStore';
+import { saveMaskSnapshot } from '@/lib/brushTool';
 import Button from '@/components/ui/Button';
 import EditPreview from './EditPreview';
 import BackgroundSelector from './BackgroundSelector';
 import FilterControls from './FilterControls';
 import TransformControls from './TransformControls';
+import RefineEdgesModal from './RefineEdgesModal';
 
 interface EditModalProps {
   originalImage: HTMLImageElement;
@@ -24,9 +26,43 @@ export default function EditModal({
   const hasUnsavedEdits = useAppStore((state) => state.hasUnsavedEdits);
   const setHasUnsavedEdits = useAppStore((state) => state.setHasUnsavedEdits);
   const resetEditState = useAppStore((state) => state.resetEditState);
+  
+  // Refine Edges modal state
+  const isRefineModalOpen = useAppStore((state) => state.isRefineModalOpen);
+  const openRefineModal = useAppStore((state) => state.openRefineModal);
 
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [showBefore, setShowBefore] = useState(false);
+  
+  // Preview version counter - incremented to force EditPreview re-render after mask changes
+  const [previewVersion, setPreviewVersion] = useState(0);
+
+  // Handler to open Refine Edges modal
+  const handleOpenRefineEdges = useCallback(() => {
+    // Save current mask state before opening refine modal
+    const snapshot = saveMaskSnapshot(maskCanvas);
+    openRefineModal(snapshot);
+  }, [maskCanvas, openRefineModal]);
+
+  // Handler when Refine Edges modal finishes (returns to edit modal)
+  const handleRefineFinish = useCallback(() => {
+    // Mark as having unsaved edits since mask may have changed
+    setHasUnsavedEdits(true);
+    // Increment preview version to force EditPreview to re-render with updated mask
+    setPreviewVersion(v => v + 1);
+  }, [setHasUnsavedEdits]);
+
+  // Handler when "Apply & Done" is clicked from Refine Edges modal
+  const handleRefineApplyAndDone = useCallback(() => {
+    setHasUnsavedEdits(false);
+    onApply();
+  }, [setHasUnsavedEdits, onApply]);
+
+  // Handler when "Exit Editor" is clicked from Refine Edges modal
+  const handleRefineExitEditor = useCallback(() => {
+    resetEditState();
+    onClose();
+  }, [resetEditState, onClose]);
 
   // Focus trap
   useEffect(() => {
@@ -137,9 +173,10 @@ export default function EditModal({
             </button>
           </div>
 
-          {/* Canvas Preview */}
+          {/* Canvas Preview - key prop forces re-render when mask changes in Refine Edges */}
           <div className="flex-1 overflow-hidden">
             <EditPreview
+              key={previewVersion}
               originalImage={originalImage}
               maskCanvas={maskCanvas}
               showBefore={showBefore}
@@ -155,20 +192,20 @@ export default function EditModal({
             <FilterControls />
             <TransformControls />
 
-            {/* Refine Edges Section - Placeholder for Phase 3 */}
+            {/* Refine Edges Section */}
             <div className="space-y-3">
               <h3 className="text-sm font-semibold text-gray-700">Edges</h3>
               <button
-                disabled
-                className="w-full py-2 px-4 rounded-lg border border-gray-200 text-sm text-gray-400
-                           bg-gray-50 cursor-not-allowed flex items-center justify-center gap-2"
-                title="Coming soon - Fine-tune background removal edges"
+                onClick={handleOpenRefineEdges}
+                className="w-full py-2.5 px-4 rounded-lg border-2 border-primary text-sm text-primary font-medium
+                           bg-primary-light hover:bg-primary hover:text-white transition-colors flex items-center justify-center gap-2"
+                title="Fine-tune background removal edges"
               >
                 <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M12 3v18M3 12h18" strokeLinecap="round" />
+                  <path d="M12 20h9" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
                 Refine Edges
-                <span className="text-xs bg-gray-200 px-1.5 py-0.5 rounded">Soon</span>
               </button>
               <p className="text-xs text-gray-400">
                 Fine-tune the edges of your cutout for cleaner results.
@@ -224,6 +261,17 @@ export default function EditModal({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Refine Edges Modal */}
+      {isRefineModalOpen && (
+        <RefineEdgesModal
+          originalImage={originalImage}
+          maskCanvas={maskCanvas}
+          onFinishRefining={handleRefineFinish}
+          onApplyAndDone={handleRefineApplyAndDone}
+          onExitEditor={handleRefineExitEditor}
+        />
       )}
     </div>
   );

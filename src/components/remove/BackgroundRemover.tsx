@@ -190,6 +190,10 @@ export default function BackgroundRemover() {
       }
     }
 
+    // Increment preview version to force ResultsView/ComparisonSlider to update
+    // This is needed because maskCanvas reference stays the same even when contents change
+    setPreviewVersion(v => v + 1);
+
     // Reset edit state and close modal
     resetEditState();
     closeEditModal();

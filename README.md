@@ -24,6 +24,15 @@ Clearcut is a privacy-first background removal and image editing tool that runs 
 - **Undo/Redo** - Up to 20 history entries for brush edits.
 - **Before/After Comparison** - Interactive slider to compare original and edited images.
 
+#### Edge Refinement
+- **Refine Edges Modal** - Dedicated overlay for precision mask editing with zoom/pan support.
+- **Eraser Tool** - Remove leftover background artifacts the AI missed.
+- **Restore Tool** - Bring back accidentally removed details like hair edges, fingers, etc.
+- **Zoom Controls** - 1.0x to 4.0x zoom for precision work on fine details.
+- **Pan Navigation** - Hold Space + drag (desktop) or two-finger drag (mobile) to navigate zoomed canvas.
+- **Touch Gestures** - Pinch-to-zoom and two-finger pan for mobile devices.
+- **Reset All Edits** - Revert all refinement strokes back to the original state.
+
 #### Image Editing Modal
 - **Full-Screen Editor** - Immersive editing experience with real-time preview.
 - **Background Selection** - Choose from 12 preset colors, custom color picker, or upload your own background image.
@@ -110,7 +119,10 @@ clearcut/
 │   │   │   ├── ExportModal.tsx          # Export flow with Ko-fi
 │   │   │   ├── BackgroundSelector.tsx   # Preset/custom backgrounds
 │   │   │   ├── FilterControls.tsx       # BG filter sliders
-│   │   │   └── TransformControls.tsx    # Zoom/rotate/flip/crop
+│   │   │   ├── TransformControls.tsx    # Zoom/rotate/flip/crop
+│   │   │   ├── RefineEdgesModal.tsx     # Edge refinement overlay
+│   │   │   ├── RefineEdgesCanvas.tsx    # Zoomable canvas with brush
+│   │   │   └── RefineEdgesControls.tsx  # Refinement tool controls
 │   │   └── ui/                   # Reusable UI components
 │   ├── lib/
 │   │   ├── segmentation.ts       # AI model integration
@@ -139,9 +151,10 @@ clearcut/
 1. **Model Loading** - On first visit, the RMBG-1.4 model (~45MB) is downloaded and cached in your browser.
 2. **Image Processing** - When you upload an image, it's processed entirely client-side using WebGPU (if available) or WASM.
 3. **Mask Generation** - The AI generates a segmentation mask identifying foreground vs background.
-4. **Image Editing** - Open the full-screen editor to apply background replacements, filters (brightness, contrast, saturation, blur), transforms (zoom, rotate, flip), and crop to specific aspect ratios.
-5. **Compositing** - The mask is applied to create a transparent background, with optional color/image replacement and filters.
-6. **Export** - Click the download button to trigger the export modal. The final result is rendered to a canvas and exported as PNG/JPG with the original filename + "-nobg" suffix.
+4. **Edge Refinement** - Use the Refine Edges tool to clean up any imperfections. Zoom in (up to 4x) for precision work, use Eraser to remove leftover background, or Restore to bring back accidentally removed details.
+5. **Image Editing** - Open the full-screen editor to apply background replacements, filters (brightness, contrast, saturation, blur), transforms (zoom, rotate, flip), and crop to specific aspect ratios.
+6. **Compositing** - The mask is applied to create a transparent background, with optional color/image replacement and filters.
+7. **Export** - Click the download button to trigger the export modal. The final result is rendered to a canvas and exported as PNG/JPG with the original filename + "-nobg" suffix.
 
 **No data ever leaves your browser.**
 

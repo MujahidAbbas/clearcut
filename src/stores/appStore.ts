@@ -8,6 +8,13 @@ export interface CropBox {
   height: number;
 }
 
+// Refine Edges state for zoom/pan during mask refinement
+export interface RefineEdgesState {
+  zoom: number;           // 1.0 to 4.0, default 1.0
+  pan: { x: number; y: number };  // Pan offset in pixels
+  isSpacePressed: boolean; // Track if space key is held for panning
+}
+
 export interface EditState {
   rotation: number;        // degrees: 0, 90, 180, 270
   flipHorizontal: boolean;
@@ -55,6 +62,11 @@ interface AppState {
   isEditModalOpen: boolean;
   hasUnsavedEdits: boolean;
 
+  // Refine Edges State
+  isRefineModalOpen: boolean;
+  refineEdgesState: RefineEdgesState;
+  preRefineMaskSnapshot: string | null;  // Snapshot before refine session for "Reset All"
+
   // Actions
   setOriginalImage: (img: HTMLImageElement | null) => void;
   setMaskCanvas: (canvas: HTMLCanvasElement | null) => void;
@@ -78,6 +90,15 @@ interface AppState {
   closeEditModal: () => void;
   setHasUnsavedEdits: (value: boolean) => void;
   applyEdits: () => void;
+  
+  // Refine Edges Actions
+  openRefineModal: (maskSnapshot: string) => void;
+  closeRefineModal: () => void;
+  setRefineZoom: (zoom: number) => void;
+  setRefinePan: (pan: { x: number; y: number }) => void;
+  setRefineSpacePressed: (pressed: boolean) => void;
+  resetRefineEdgesState: () => void;
+  getPreRefineMaskSnapshot: () => string | null;
 }
 
 const editInitialState: EditState = {
@@ -97,6 +118,13 @@ const editInitialState: EditState = {
   cropDisplayScale: 1,
 };
 
+// Initial state for refine edges modal (zoom 1.0-4.0, pan with space+drag)
+const refineEdgesInitialState: RefineEdgesState = {
+  zoom: 1.0,
+  pan: { x: 0, y: 0 },
+  isSpacePressed: false,
+};
+
 const initialState = {
   originalImage: null,
   maskCanvas: null,
@@ -104,7 +132,7 @@ const initialState = {
   backgroundColor: '#ffffff',
   backgroundType: 'transparent' as const,
   backgroundImage: null,
-  brushSize: 20,
+  brushSize: 30,  // Default 30px for refine edges (was 20)
   brushMode: 'erase' as const,
   isProcessing: false,
   modelLoaded: false,
@@ -115,6 +143,10 @@ const initialState = {
   editState: editInitialState,
   isEditModalOpen: false,
   hasUnsavedEdits: false,
+  // Refine Edges initial state
+  isRefineModalOpen: false,
+  refineEdgesState: refineEdgesInitialState,
+  preRefineMaskSnapshot: null as string | null,
 };
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -182,4 +214,49 @@ export const useAppStore = create<AppState>((set, get) => ({
     hasUnsavedEdits: false,
     isEditModalOpen: false,
   }),
+
+  // Refine Edges Actions - Opens modal and saves current mask state for potential reset
+  openRefineModal: (maskSnapshot: string) => set({
+    isRefineModalOpen: true,
+    preRefineMaskSnapshot: maskSnapshot,
+    refineEdgesState: refineEdgesInitialState,  // Reset zoom/pan when opening
+  }),
+
+  // Closes refine modal and clears the pre-refine snapshot
+  closeRefineModal: () => set({
+    isRefineModalOpen: false,
+    refineEdgesState: refineEdgesInitialState,
+  }),
+
+  // Sets zoom level for refine edges canvas (clamped to 1.0-4.0)
+  setRefineZoom: (zoom: number) => set((state) => ({
+    refineEdgesState: {
+      ...state.refineEdgesState,
+      zoom: Math.max(1.0, Math.min(4.0, zoom)),
+    },
+  })),
+
+  // Sets pan offset for refine edges canvas
+  setRefinePan: (pan: { x: number; y: number }) => set((state) => ({
+    refineEdgesState: {
+      ...state.refineEdgesState,
+      pan,
+    },
+  })),
+
+  // Tracks space key press state for pan mode
+  setRefineSpacePressed: (pressed: boolean) => set((state) => ({
+    refineEdgesState: {
+      ...state.refineEdgesState,
+      isSpacePressed: pressed,
+    },
+  })),
+
+  // Resets refine edges state (zoom, pan) to defaults
+  resetRefineEdgesState: () => set({
+    refineEdgesState: refineEdgesInitialState,
+  }),
+
+  // Returns the mask snapshot saved when refine modal opened (for "Reset All Edits")
+  getPreRefineMaskSnapshot: () => get().preRefineMaskSnapshot,
 }));
