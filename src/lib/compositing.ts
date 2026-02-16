@@ -1,3 +1,5 @@
+import { decontaminateColors } from './maskPostProcessing';
+
 export interface Background {
   type: 'transparent' | 'color' | 'image';
   color?: string;
@@ -105,6 +107,12 @@ export function drawMaskedForeground(
   // Apply mask using destination-in composite operation
   tempCtx.globalCompositeOperation = 'destination-in';
   tempCtx.drawImage(maskCanvas, 0, 0, tempCanvas.width, tempCanvas.height);
+
+  // Decontaminate edge pixels: replace background color bleed in semi-transparent
+  // pixels with clean foreground colors from nearby opaque pixels
+  const foregroundData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+  decontaminateColors(foregroundData.data, tempCanvas.width, tempCanvas.height);
+  tempCtx.putImageData(foregroundData, 0, 0);
 
   // Draw masked result onto main canvas
   ctx.drawImage(tempCanvas, 0, 0);
