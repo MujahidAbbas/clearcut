@@ -1,5 +1,6 @@
 import { pipeline, env } from '@huggingface/transformers';
 import type { ImageSegmentationPipeline } from '@huggingface/transformers';
+import { postProcessMask } from './maskPostProcessing';
 
 // Configure environment
 env.allowLocalModels = false;
@@ -143,6 +144,7 @@ function rawImageToCanvas(
       imageData.data[i * 4 + 3] = alpha; // A
     }
 
+    postProcessMask(imageData);
     tempCtx.putImageData(imageData, 0, 0);
 
     // Scale to target size
@@ -158,6 +160,7 @@ function rawImageToCanvas(
       imageData.data[i * 4 + 3] = alpha;
     }
 
+    postProcessMask(imageData);
     maskCtx.putImageData(imageData, 0, 0);
   }
 
