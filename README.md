@@ -126,6 +126,7 @@ clearcut/
 │   │   └── ui/                   # Reusable UI components
 │   ├── lib/
 │   │   ├── segmentation.ts       # AI model integration
+│   │   ├── maskPostProcessing.ts # Mask cleanup & color decontamination
 │   │   ├── compositing.ts        # Canvas rendering & export
 │   │   ├── brushTool.ts          # Brush editing utilities
 │   │   ├── imageFilters.ts       # CSS filter utilities
@@ -151,10 +152,11 @@ clearcut/
 1. **Model Loading** - On first visit, the RMBG-1.4 model (~45MB) is downloaded and cached in your browser.
 2. **Image Processing** - When you upload an image, it's processed entirely client-side using WebGPU (if available) or WASM.
 3. **Mask Generation** - The AI generates a segmentation mask identifying foreground vs background.
-4. **Edge Refinement** - Use the Refine Edges tool to clean up any imperfections. Zoom in (up to 4x) for precision work, use Eraser to remove leftover background, or Restore to bring back accidentally removed details.
-5. **Image Editing** - Open the full-screen editor to apply background replacements, filters (brightness, contrast, saturation, blur), transforms (zoom, rotate, flip), and crop to specific aspect ratios.
-6. **Compositing** - The mask is applied to create a transparent background, with optional color/image replacement and filters.
-7. **Export** - Click the download button to trigger the export modal. The final result is rendered to a canvas and exported as PNG/JPG with the original filename + "-nobg" suffix.
+4. **Mask Post-Processing** - The raw mask is refined with min-max normalization, morphological opening, and Gaussian blur for clean anti-aliased edges.
+5. **Edge Refinement** - Use the Refine Edges tool to clean up any imperfections. Zoom in (up to 4x) for precision work, use Eraser to remove leftover background, or Restore to bring back accidentally removed details.
+6. **Image Editing** - Open the full-screen editor to apply background replacements, filters (brightness, contrast, saturation, blur), transforms (zoom, rotate, flip), and crop to specific aspect ratios.
+7. **Compositing** - The mask is applied to create a transparent background, with color decontamination to eliminate background color fringe at edges, plus optional color/image replacement and filters.
+8. **Export** - Click the download button to trigger the export modal. The final result is rendered to a canvas and exported as PNG/JPG with the original filename + "-nobg" suffix.
 
 **No data ever leaves your browser.**
 
